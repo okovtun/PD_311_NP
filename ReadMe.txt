@@ -1,3 +1,4 @@
+https://github.com/okovtun/PD_311_NP.git
 https://www.youtube.com/playlist?list=PLeqyOOqxeiINcYN1bkr6s2AP9k_3079eU
 
 https://fibertop.ru/optic_connectors.htm/
