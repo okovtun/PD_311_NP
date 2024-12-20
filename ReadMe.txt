@@ -4,6 +4,23 @@ https://www.youtube.com/playlist?list=PLeqyOOqxeiINcYN1bkr6s2AP9k_3079eU
 https://fibertop.ru/optic_connectors.htm/
 https://www.chipdip.ru/info/import-ic-packages
 
+TOREAD:
+	https://datatracker.ietf.org/doc/html/rfc791
+	RFC - Request For Comment;
+	IETF - Internet Engineering Task Force;
+
+Network Equipment:
+1. Peripheral:	135 239 * 8 = 1,081,912 ð.
+	https://www.citilink.ru/product/kommutator-zyxel-xgs2220-30-eu0101f-upravlyaemyi-1974989/
+2. Central:	   953 039ð.
+	https://www.citilink.ru/product/kommutator-zyxel-xs3800-28-zz0101f-upravlyaemyi-1167736/properties/
+3. Server NIC:  22 119ð.
+	https://www.citilink.ru/product/setevoi-adapter-10g-etherrnet-zyxel-xgn100c-zz0102f-pci-express-x4-2012285/
+4. WiFi APs:	17 600ð.
+	https://www.citilink.ru/product/tochka-dostupa-zyxel-nebulaflex-nwa50ax-nwa50ax-eu0102f-1595122/properties/
+5. PoE Switch: 181 699ð.
+	https://www.citilink.ru/product/kommutator-zyxel-xgs2220-30hp-eu0101f-upravlyaemyi-1974990/properties/
+
 EIA/TIA 568-A/B	UTP
 
 TODO:
