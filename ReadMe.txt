@@ -8,6 +8,12 @@ TOREAD:
 	https://datatracker.ietf.org/doc/html/rfc791
 	RFC - Request For Comment;
 	IETF - Internet Engineering Task Force;
+	IPclasses:	https://datatracker.ietf.org/doc/html/rfc796
+
+TODO:
+1. ƒобить сеть класса '—': 192.168.100.0/24.
+   Ќужно разделить ее на максимально-возможное количество подсетей;
+2. ¬з€ть произвольную сеть класса 'B' и разделить ее на 32 подсети;
 
 Network Equipment:
 1. Peripheral:	135 239 * 8 = 1,081,912 р.
