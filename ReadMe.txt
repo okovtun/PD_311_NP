@@ -4,6 +4,8 @@ https://www.youtube.com/playlist?list=PLeqyOOqxeiINcYN1bkr6s2AP9k_3079eU
 https://fibertop.ru/optic_connectors.htm/
 https://www.chipdip.ru/info/import-ic-packages
 
+NetworkProgramming
+
 TOREAD:
 	https://datatracker.ietf.org/doc/html/rfc791
 	RFC - Request For Comment;
@@ -11,6 +13,15 @@ TOREAD:
 	IPclasses:	https://datatracker.ietf.org/doc/html/rfc796
 
 TODO:
+1. В зависимости от введенных IP-адреса и маски в поле 'Info' будет выводиться:
+   адрес сети, широковещательный адрес для этой сети, и количество узлов сети.
+   https://learn.microsoft.com/en-us/windows/win32/uxguide/ctrl-spin-controls
+   https://learn.microsoft.com/en-us/windows/win32/controls/up-down-control-reference
+2. При вводе IP-адреса должна определяться маска и префикс;
+3. При изменении маски должен реагировать префикс, и наоборот, 
+   при изменении префикса должна реагировать маска;
+
+DONE:
 1. Добить сеть класса 'С': 192.168.100.0/24.
    Нужно разделить ее на максимально-возможное количество подсетей;
 2. Взять произвольную сеть класса 'B' и разделить ее на 32 подсети;
