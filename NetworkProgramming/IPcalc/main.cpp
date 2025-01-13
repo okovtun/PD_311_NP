@@ -6,6 +6,8 @@
 #include"resource.h"
 
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LPSTR FormatIPaddress(CONST CHAR* sz_message, DWORD IPaddress);
+LPSTR FormatMessageWithNumber(CONST CHAR* sz_message, DWORD number);
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
@@ -88,8 +90,21 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 		case IDOK:
 		{
+			CHAR sz_info[SIZE] = "Info:\n";//"Здесь будет информация о сети";	//sz_ - String Zero (NULL-Terminated Line)
+			//CHAR sz_network_address[SIZE]{};
+			//CHAR sz_broadcast_address[SIZE]{};
+			CHAR sz_buffer[SIZE]{};
 
-			CHAR sz_info[SIZE] = "Info:\nЗдесь будет информация о сети";	//sz_ - String Zero (NULL-Terminated Line)
+			SendMessage(hIPaddress, IPM_GETADDRESS, 0, (LPARAM)&dwIPaddress);
+			SendMessage(hIPmask, IPM_GETADDRESS, 0, (LPARAM)&dwIPmask);
+			DWORD dwNetworkAddress = dwIPaddress & dwIPmask;
+			DWORD dwBroadcastAddress = dwNetworkAddress | ~dwIPmask;
+			std::cout << dwNetworkAddress << std::endl;
+			strcat(sz_info, FormatIPaddress("Адрес сети:\t\t", dwNetworkAddress));
+			strcat(sz_info, FormatIPaddress("Широковещательный адрес:", dwBroadcastAddress));
+			strcat(sz_info, FormatMessageWithNumber("Количество IP-адресов:\t", dwBroadcastAddress - dwNetworkAddress + 1));
+			strcat(sz_info, FormatMessageWithNumber("Количество узлов:\t\t", dwBroadcastAddress - dwNetworkAddress - 1));
+
 			HWND hInfo = GetDlgItem(hwnd, IDC_STATIC_INFO);
 			SendMessage(hInfo, WM_SETTEXT, 0, (LPARAM)sz_info);
 		}
@@ -103,4 +118,25 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		EndDialog(hwnd, 0);
 	}
 	return FALSE;
+}
+LPSTR FormatIPaddress(CONST CHAR* sz_message, DWORD IPaddress)
+{
+	CHAR sz_buffer[256]{};
+	sprintf
+	(
+		sz_buffer,
+		"%s\t%i.%i.%i.%i;\n",
+		sz_message,
+		FIRST_IPADDRESS(IPaddress),
+		SECOND_IPADDRESS(IPaddress),
+		THIRD_IPADDRESS(IPaddress),
+		FOURTH_IPADDRESS(IPaddress)
+	);
+	return sz_buffer;
+}
+LPSTR FormatMessageWithNumber(CONST CHAR* sz_message, DWORD number)
+{
+	CHAR sz_buffer[256]{};
+	sprintf(sz_buffer, "%s%i;\n", sz_message, number);
+	return sz_buffer;
 }
