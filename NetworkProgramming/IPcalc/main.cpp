@@ -5,6 +5,8 @@
 #include<iostream>
 #include"resource.h"
 
+#pragma comment (lib, "comctl32");
+
 #define IDC_COLUMN_NETWORK_ADDRESS			2000
 #define IDC_COLUMN_BROADCAST_ADDRESS		2001
 #define IDC_COLUMN_NUMBER_OF_IP_ADDRESSES	2002
@@ -16,6 +18,7 @@ LPSTR FormatIPaddress(CONST CHAR* sz_message, DWORD IPaddress);
 LPSTR FormatMessageWithNumber(CONST CHAR* sz_message, DWORD number);
 VOID InitLVCcolumn(LPLVCOLUMN column, LPSTR text, INT subitem);
 LPSTR FormatLastError();
+VOID InsetItemToListView(HWND hList, INT iItem, INT iSubItem, CONST CHAR* lpstrContent);
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
@@ -37,7 +40,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_INITDIALOG:
 	{
-		//InitCommonControls();
+		InitCommonControls();
 		HWND hUpDown = GetDlgItem(hwnd, IDC_SPIN_PREFIX);
 		SendMessage(hUpDown, UDM_SETRANGE, 0, MAKELPARAM(30, 1));
 		//https://learn.microsoft.com/en-us/windows/win32/controls/udm-setrange
@@ -190,6 +193,7 @@ BOOL CALLBACK DlgProcSubnets(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_INITDIALOG:
 	{
+		InitCommonControls();
 		hList = GetDlgItem(hwnd, IDC_LIST_SUBNETS);
 		iColumnID = SendMessage(hList, LVM_INSERTCOLUMN, 0, (LPARAM)&lvcNetworkAddress);
 		std::cout << FormatLastError() << std::endl;
@@ -250,34 +254,29 @@ BOOL CALLBACK DlgProcSubnets(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			sprintf(sz_message, "—еть класса '%s' разделена на %i подсетей, по %i IP-адресов:", sz_class, dwNumberOfSubnets, dwNetworkCapacity);
 			SendMessage(GetDlgItem(hwnd, IDC_STATIC_NUMBER_OF_SUBNETS), WM_SETTEXT, 0, (LPARAM)sz_message);
 
+			CHAR szContent[256]{};
 			for (DWORD i = 0, dwNetworkAddress = dwClassAddress; i < dwNumberOfSubnets; i++, dwNetworkAddress += dwNetworkCapacity)
 			{
-				CHAR szNetworkAddress[256];
-				//_itoa(dwNetworkAddress, sz_IP_address, 10);
-				strcpy(szNetworkAddress,FormatIPaddress(dwNetworkAddress));
-				//std::cout << szNetworkAddress << std::endl;
-				//LVITEM lvItem;
-				ZeroMemory(&lvItem, sizeof(lvItem));
-				//lvItem.pszText = FormatIPaddress(dwNetworkAddress);
-				lvItem.pszText = szNetworkAddress;
-				lvItem.mask = LVIF_TEXT;// | LVIF_STATE;
-				//lvItem.stateMask = 0; 
-				//lvItem.iSubItem = 0;
-				//lvItem.state = 0;
-
-				lvItem.iItem = i;
-
-				std::cout << lvItem.pszText << std::endl;
-				SendMessage(hList, LVM_INSERTITEM, 0, (LPARAM)&lvItem);
-				std::cout << FormatLastError() << std::endl;
+				InsetItemToListView(hList, i, 0, strcpy(szContent, FormatIPaddress(dwNetworkAddress)));
+				InsetItemToListView(hList, i, 1, strcpy(szContent, FormatIPaddress(dwNetworkAddress + dwNetworkCapacity - 1)));
 			}
-
 		}
 	}
 	break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case IDC_LIST_SUBNETS:
+			if (HIWORD(wParam) == LVN_GETDISPINFO)
+			{
+				NMLVDISPINFO* plvdi = (NMLVDISPINFO*)lParam;
+				/*switch (plvdi->item.iSubItem)
+				{
+
+				}*/
+
+			}
+			break;
 		case IDOK:
 		case IDCANCEL:EndDialog(hwnd, 0); break;
 		}
@@ -312,4 +311,25 @@ LPSTR FormatLastError()
 		NULL
 	);
 	return lpszMessageBuffer;
+}
+VOID InsetItemToListView(HWND hList, INT iItem, INT iSubItem, CONST CHAR* lpstrContent)
+{
+	//CHAR szContent[256];
+	//strcpy(szNetworkAddress, FormatIPaddress(dwNetworkAddress));
+	//std::cout << szNetworkAddress << std::endl;
+	LVITEM lvItem;
+	ZeroMemory(&lvItem, sizeof(lvItem));
+	//lvItem.pszText = FormatIPaddress(dwNetworkAddress);
+	lvItem.pszText = (LPSTR)lpstrContent;
+	lvItem.mask = LVIF_TEXT /*| LVCF_SUBITEM*/;
+	lvItem.iItem = iItem;
+	lvItem.iSubItem = iSubItem;
+	//lvItem.cColumns = 2;
+	//UINT columns[] = { 0, 1 };
+	//lvItem.puColumns = columns;
+
+	std::cout << lvItem.pszText << std::endl;
+	SendMessage(hList, LVM_INSERTITEM, 0, (LPARAM)&lvItem);
+	SendMessage(hList, LVM_SETITEM, 0, (LPARAM)&lvItem);
+	std::cout << FormatLastError() << std::endl;
 }
