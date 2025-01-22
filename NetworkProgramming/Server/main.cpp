@@ -95,56 +95,69 @@ void main()
 		return;
 	}
 	cout << "Server started on TCP port " << DEFAULT_PORT << endl;
+
+
 	//5. Accept connection:
-	SOCKET ClientSocket = accept(ListenSocket, NULL, NULL);
-	if (ClientSocket == INVALID_SOCKET)
-	{
-		cout << "Accept failed with error #" << WSAGetLastError() << endl;
-		closesocket(ListenSocket);
-		WSACleanup();
-		return;
-	}
-
-	//closesocket(ClientSocket);
-	closesocket(ListenSocket);
-
-	//6. Receive & Send data:
-	char recvbuffer[BUFFER_SIZE]{};
-	int received = 0;
 	do
 	{
-		received = recv(ClientSocket, recvbuffer, BUFFER_SIZE, 0);
-		if (received > 0)
+		SOCKET ClientSocket = accept(ListenSocket, NULL, NULL);
+		if (ClientSocket == INVALID_SOCKET)
 		{
-			cout << "Bytes received:  \t" << received << endl;
-			cout << "Received message:\t" << recvbuffer << endl;
-			int iSendResult = send(ClientSocket, "Привет Client", received, 0);
-			if (iSendResult == SOCKET_ERROR)
-			{
-				cout << "Send failed with error #" << WSAGetLastError() << endl;
-				closesocket(ClientSocket);
-				WSACleanup();
-				return;
-			}
-			cout << "Bytes sent: " << iSendResult << endl;
-		}
-		else if (received == 0)cout << "Connection closing..." << endl;
-		else
-		{
-			cout << "Receive failed with error #" << WSAGetLastError() << endl;
-			closesocket(ClientSocket);
+			cout << "Accept failed with error #" << WSAGetLastError() << endl;
+			closesocket(ListenSocket);
 			WSACleanup();
 			return;
 		}
-	} while (received > 0);
+		//CHAR sz_client_name[32];
+		int namelen = 32;
+		SOCKADDR client_socket;
+		ZeroMemory(&client_socket, sizeof(client_socket));
+		getsockname(ClientSocket, &client_socket, &namelen);
+		cout << "getsockname error # " << WSAGetLastError() << endl;
+		cout << client_socket.sa_data << endl;
 
-	//7. Disconnection:
-	iResult = shutdown(ClientSocket, SD_SEND);
-	if (iResult == SOCKET_ERROR)
-	{
-		cout << "shutdown failed with error #" << WSAGetLastError() << endl;
-	}
-	closesocket(ClientSocket);
+		//closesocket(ClientSocket);
+		//closesocket(ListenSocket);
+
+		//6. Receive & Send data:
+		char recvbuffer[BUFFER_SIZE]{};
+		int received = 0;
+		do
+		{
+			received = recv(ClientSocket, recvbuffer, BUFFER_SIZE, 0);
+			if (received > 0)
+			{
+				cout << "Bytes received:  \t" << received << endl;
+				cout << "Received message:\t" << recvbuffer << endl;
+				int iSendResult = send(ClientSocket, "Привет Client", received, 0);
+				if (iSendResult == SOCKET_ERROR)
+				{
+					cout << "Send failed with error #" << WSAGetLastError() << endl;
+					closesocket(ClientSocket);
+					WSACleanup();
+					return;
+				}
+				cout << "Bytes sent: " << iSendResult << endl;
+			}
+			else if (received == 0)cout << "Connection closing..." << endl;
+			else
+			{
+				cout << "Receive failed with error #" << WSAGetLastError() << endl;
+				closesocket(ClientSocket);
+				//WSACleanup();
+				//return;
+			}
+		} while (received > 0);
+
+		//7. Disconnection:
+		iResult = shutdown(ClientSocket, SD_SEND);
+		if (iResult == SOCKET_ERROR)
+		{
+			cout << "shutdown failed with error #" << WSAGetLastError() << endl;
+		}
+		closesocket(ClientSocket);
+	} while (true);
+
 	WSACleanup();
 	system("PAUSE");
 }
