@@ -100,7 +100,12 @@ void main()
 	//5. Accept connection:
 	do
 	{
-		SOCKET ClientSocket = accept(ListenSocket, NULL, NULL);
+		CHAR sz_client_name[32];
+		int namelen = 32;
+		SOCKADDR client_socket;
+		ZeroMemory(&client_socket, sizeof(client_socket));
+
+		SOCKET ClientSocket = accept(ListenSocket, &client_socket, &namelen);
 		if (ClientSocket == INVALID_SOCKET)
 		{
 			cout << "Accept failed with error #" << WSAGetLastError() << endl;
@@ -108,13 +113,19 @@ void main()
 			WSACleanup();
 			return;
 		}
-		//CHAR sz_client_name[32];
-		int namelen = 32;
-		SOCKADDR client_socket;
-		ZeroMemory(&client_socket, sizeof(client_socket));
-		getsockname(ClientSocket, &client_socket, &namelen);
-		cout << "getsockname error # " << WSAGetLastError() << endl;
-		cout << client_socket.sa_data << endl;
+		//getsockname(ClientSocket, &client_socket, &namelen);
+		sprintf
+		(
+			sz_client_name,
+			"%i.%i.%i.%i:%i",
+			(unsigned char)client_socket.sa_data[2],
+			(unsigned char)client_socket.sa_data[3],
+			(unsigned char)client_socket.sa_data[4],
+			(unsigned char)client_socket.sa_data[5],
+			(unsigned char)client_socket.sa_data[0] << 8 | (unsigned char)client_socket.sa_data[1]
+			//(unsigned char)client_socket.sa_data[0] * 256 + (unsigned char)client_socket.sa_data[1]
+		);
+		cout << sz_client_name << endl;
 
 		//closesocket(ClientSocket);
 		//closesocket(ListenSocket);
