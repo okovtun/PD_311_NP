@@ -20,6 +20,7 @@
 #include<iostream>
 #include<WinSock2.h>
 #include<WS2tcpip.h>
+#include<CommCtrl.h>
 using std::cin;
 using std::cout;
 using std::endl;
@@ -29,6 +30,38 @@ using std::endl;
 #define BUFFER_SIZE 1500
 
 #pragma comment(lib, "Ws2_32.lib")
+
+union ClientSocketData
+{
+	SOCKADDR client_addr;
+	unsigned long long data;
+public:
+	ClientSocketData(SOCKADDR sockaddr)
+	{
+		this->client_addr = sockaddr;
+	}
+	int get_port()const
+	{
+		int i_port = (unsigned char)client_addr.sa_data[0];
+		i_port <<= 8;
+		i_port += (unsigned char)client_addr.sa_data[1];
+		return i_port;
+	}
+	char* get_IP_address(char sz_client_addr[])const
+	{
+		int ip_address = data >> 16;
+		sprintf
+		(
+			sz_client_addr, "%i.%i.%i.%i:%i",
+			(int)(unsigned char)client_addr.sa_data[2],
+			(int)(unsigned char)client_addr.sa_data[3],
+			(int)(unsigned char)client_addr.sa_data[4],
+			(int)(unsigned char)client_addr.sa_data[5],
+			get_port()
+		);
+		return sz_client_addr;
+	}
+};
 
 void main()
 {
@@ -123,9 +156,11 @@ void main()
 			(int)(unsigned char)client_addr.sa_data[3],
 			(int)(unsigned char)client_addr.sa_data[4],
 			(int)(unsigned char)client_addr.sa_data[5],
-			unsigned short(client_addr.sa_data[1]<<16 | client_addr.sa_data[0])
+			unsigned char(client_addr.sa_data[0])<<8 | unsigned char(client_addr.sa_data[1])
 		);
 		cout << sz_client_addr << endl;
+		ClientSocketData client_socket_data(client_addr);
+		cout << client_socket_data.get_IP_address(sz_client_addr) << endl;
 
 		//closesocket(ClientSocket);
 		//closesocket(ListenSocket);
