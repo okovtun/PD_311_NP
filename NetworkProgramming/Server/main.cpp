@@ -174,12 +174,14 @@ void main()
 		int received = 0;
 		do
 		{
+			ZeroMemory(recvbuffer, BUFFER_SIZE);
 			received = recv(ClientSocket, recvbuffer, BUFFER_SIZE, 0);
 			if (received > 0)
 			{
 				cout << "Bytes received:  \t" << received << endl;
 				cout << "Received message:\t" << recvbuffer << endl;
-				int iSendResult = send(ClientSocket, "Привет Client", received, 0);
+				int iSendResult = send(ClientSocket, recvbuffer, received, 0);
+				//int iSendResult = send(ClientSocket, "Привет Client", received, 0);
 				if (iSendResult == SOCKET_ERROR)
 				{
 					cout << "Send failed with error #" << WSAGetLastError() << endl;
