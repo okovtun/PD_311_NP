@@ -25,8 +25,8 @@ using std::cout;
 using std::endl;
 
 #define DEFAULT_PORT	"27015"
-
-#define BUFFER_SIZE 1500
+#define BUFFER_SIZE		  1500
+#define MAX_CONNECTIONS		 5
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -66,7 +66,11 @@ union ClientSocketData
 	}
 };
 
-void HandleClient(SOCKET ClientSocket);
+void HandleClient(int i);
+SOCKET ClientSocket;
+SOCKET client_sockets[MAX_CONNECTIONS]{};
+HANDLE client_handles[MAX_CONNECTIONS]{};
+int client_number = 0;
 
 void main()
 {
@@ -136,14 +140,17 @@ void main()
 
 
 	//5. Accept connection:
+
 	do
 	{
+		client_number = 0;
 		CHAR sz_client_name[32];
 		int namelen = 32;
 		SOCKADDR client_socket;
 		ZeroMemory(&client_socket, sizeof(client_socket));
 
-		SOCKET ClientSocket = accept(ListenSocket, &client_socket, &namelen);
+		client_sockets[client_number] = accept(ListenSocket, &client_socket, &namelen);
+		//ClientSocket = accept(ListenSocket, &client_socket, &namelen);
 		if (ClientSocket == INVALID_SOCKET)
 		{
 			cout << "Accept failed with error #" << WSAGetLastError() << endl;
@@ -151,33 +158,42 @@ void main()
 			//WSACleanup();
 			//return;
 		}
-		HandleClient(ClientSocket);
+
+		//HandleClient(ClientSocket);
+
+		if (client_number < MAX_CONNECTIONS)
+		{
+			client_handles[client_number] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HandleClient, NULL, 0, 0);
+			client_number++;
+		}
+
 	} while (true);
 
-	WSACleanup();
 	system("PAUSE");
+	WSACleanup();
 }
 
-void HandleClient(SOCKET ClientSocket)
+void HandleClient(int i)
 {
 	CHAR sz_client_name[32];
 	int namelen = 32;
 	SOCKADDR client_socket;
-	getpeername(ClientSocket, &client_socket, &namelen);
-		/*sprintf
-		(
-			sz_client_name,
-			"%i.%i.%i.%i:%i",
-			(unsigned char)client_socket.sa_data[2],
-			(unsigned char)client_socket.sa_data[3],
-			(unsigned char)client_socket.sa_data[4],
-			(unsigned char)client_socket.sa_data[5],
-			(unsigned char)client_socket.sa_data[0] << 8 | (unsigned char)client_socket.sa_data[1]
-			//(unsigned char)client_socket.sa_data[0] * 256 + (unsigned char)client_socket.sa_data[1]
-		);
-		cout << sz_client_name << endl;*/
-		//ClientSocketData client_data(client_socket);
-		//cout << "Client:" << client_data.get_socket(sz_client_name) << endl;
+	getpeername(client_sockets[i], &client_socket, &namelen);
+	//getpeername(ClientSocket, &client_socket, &namelen);
+	/*sprintf
+	(
+		sz_client_name,
+		"%i.%i.%i.%i:%i",
+		(unsigned char)client_socket.sa_data[2],
+		(unsigned char)client_socket.sa_data[3],
+		(unsigned char)client_socket.sa_data[4],
+		(unsigned char)client_socket.sa_data[5],
+		(unsigned char)client_socket.sa_data[0] << 8 | (unsigned char)client_socket.sa_data[1]
+		//(unsigned char)client_socket.sa_data[0] * 256 + (unsigned char)client_socket.sa_data[1]
+	);
+	cout << sz_client_name << endl;*/
+	//ClientSocketData client_data(client_socket);
+	//cout << "Client:" << client_data.get_socket(sz_client_name) << endl;
 	cout << "Client: " << ClientSocketData(client_socket).get_socket(sz_client_name) << endl;
 
 	//closesocket(ClientSocket);
