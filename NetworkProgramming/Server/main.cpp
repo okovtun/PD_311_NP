@@ -175,7 +175,7 @@ void main()
 
 void HandleClient(int i)
 {
-	CHAR sz_client_name[32];
+	CHAR sz_client_name[32]{};
 	int namelen = 32;
 	SOCKADDR client_socket;
 	getpeername(client_sockets[i], &client_socket, &namelen);
@@ -205,19 +205,19 @@ void HandleClient(int i)
 	do
 	{
 		ZeroMemory(recvbuffer, BUFFER_SIZE);
-		received = recv(ClientSocket, recvbuffer, BUFFER_SIZE, 0);
+		received = recv(client_sockets[i], recvbuffer, BUFFER_SIZE, 0);
 		if (received > 0)
 		{
 			cout << "Bytes received:  \t" << received << endl;
 			cout << "Message from " << sz_client_name << ":\t" << recvbuffer << endl;
 			//cout << "Received message:\t" << recvbuffer << endl;
-			int iSendResult = send(ClientSocket, recvbuffer, received, 0);
+			int iSendResult = send(client_sockets[i], recvbuffer, received, 0);
 			//int iSendResult = send(ClientSocket, "Привет Client", received, 0);
 			if (iSendResult == SOCKET_ERROR)
 			{
 				cout << "Send failed with error #" << WSAGetLastError() << endl;
-				closesocket(ClientSocket);
-				WSACleanup();
+				closesocket(client_sockets[i]);
+				//WSACleanup();
 				return;
 			}
 			cout << "Bytes sent: " << iSendResult << endl;
@@ -226,17 +226,17 @@ void HandleClient(int i)
 		else
 		{
 			cout << "Receive failed with error #" << WSAGetLastError() << endl;
-			closesocket(ClientSocket);
+			closesocket(client_sockets[i]);
 			//WSACleanup();
 			//return;
 		}
 	} while (received > 0);
 
 	//7. Disconnection:
-	int iResult = shutdown(ClientSocket, SD_SEND);
+	int iResult = shutdown(client_sockets[i], SD_SEND);
 	if (iResult == SOCKET_ERROR)
 	{
 		cout << "shutdown failed with error #" << WSAGetLastError() << endl;
 	}
-	closesocket(ClientSocket);
+	closesocket(client_sockets[i]);
 }
