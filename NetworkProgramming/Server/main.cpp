@@ -66,11 +66,13 @@ union ClientSocketData
 	}
 };
 
-void HandleClient(int i);
+void HandleClient(LPVOID lParam);
 SOCKET ClientSocket;
 SOCKET client_sockets[MAX_CONNECTIONS]{};
 HANDLE client_handles[MAX_CONNECTIONS]{};
-int client_number = 0;
+DWORD  dw_thread_id[MAX_CONNECTIONS]{};
+int* client_number[MAX_CONNECTIONS]{};
+int number_of_clients = 0;
 
 void main()
 {
@@ -139,32 +141,35 @@ void main()
 	cout << "Server started on TCP port " << DEFAULT_PORT << endl;
 
 
-	//5. Accept connection:
-
+	//5. Accept connections:
 	do
 	{
-		client_number = 0;
+		//number_of_clients = 0;
 		CHAR sz_client_name[32];
 		int namelen = 32;
 		SOCKADDR client_socket;
 		ZeroMemory(&client_socket, sizeof(client_socket));
 
-		client_sockets[client_number] = accept(ListenSocket, &client_socket, &namelen);
-		//ClientSocket = accept(ListenSocket, &client_socket, &namelen);
-		if (ClientSocket == INVALID_SOCKET)
+		if (number_of_clients < MAX_CONNECTIONS)
 		{
-			cout << "Accept failed with error #" << WSAGetLastError() << endl;
-			closesocket(ListenSocket);
-			//WSACleanup();
-			//return;
-		}
+			//https://learn.microsoft.com/en-us/windows/win32/procthread/creating-threads
+			client_number[number_of_clients] = (int*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(int));
+			*client_number[number_of_clients] = number_of_clients;
 
-		//HandleClient(ClientSocket);
+			client_sockets[number_of_clients] = accept(ListenSocket, &client_socket, &namelen);
+			//ClientSocket = accept(ListenSocket, &client_socket, &namelen);
+			if (ClientSocket == INVALID_SOCKET)
+			{
+				cout << "Accept failed with error #" << WSAGetLastError() << endl;
+				//closesocket(ListenSocket);
+				//WSACleanup();
+				//return;
+			}
 
-		if (client_number < MAX_CONNECTIONS)
-		{
-			client_handles[client_number] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HandleClient, NULL, 0, 0);
-			client_number++;
+			//HandleClient(ClientSocket);
+
+			client_handles[number_of_clients] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HandleClient, client_number[number_of_clients], 0, 0);
+			number_of_clients++;
 		}
 
 	} while (true);
@@ -172,9 +177,11 @@ void main()
 	system("PAUSE");
 	WSACleanup();
 }
-
-void HandleClient(int i)
+//https://learn.microsoft.com/en-us/windows/win32/procthread/creating-threads
+void HandleClient(LPVOID lParam)
 {
+	int i = *((int*)lParam);
+
 	CHAR sz_client_name[32]{};
 	int namelen = 32;
 	SOCKADDR client_socket;
