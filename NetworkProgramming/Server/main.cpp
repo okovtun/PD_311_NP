@@ -67,6 +67,7 @@ union ClientSocketData
 };
 void HandleClient(LPVOID lParam);
 void PrintNumberOfClients();
+int FindFreeSlot();
 
 SOCKET ClientSocket;
 SOCKET client_sockets[MAX_CONNECTIONS]{};
@@ -155,10 +156,17 @@ void main()
 		if (number_of_clients < MAX_CONNECTIONS)
 		{
 			//https://learn.microsoft.com/en-us/windows/win32/procthread/creating-threads
-			client_number[number_of_clients] = (int*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(int));
-			*client_number[number_of_clients] = number_of_clients;
+			int i = FindFreeSlot();
+			if (client_number[i] == NULL)
+			{
+				client_number[i] = (int*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(int));
+				*client_number[i] = number_of_clients;
+			
+				//client_number[number_of_clients] = (int*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(int));
+				//*client_number[number_of_clients] = number_of_clients;
+			}
 
-			client_sockets[number_of_clients] = accept(ListenSocket, &client_socket, &namelen);
+			client_sockets[i] = accept(ListenSocket, &client_socket, &namelen);
 			//ClientSocket = accept(ListenSocket, &client_socket, &namelen);
 			if (ClientSocket == INVALID_SOCKET)
 			{
@@ -170,7 +178,7 @@ void main()
 
 			//HandleClient(ClientSocket);
 
-			client_handles[number_of_clients] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HandleClient, client_number[number_of_clients], 0, 0);
+			client_handles[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HandleClient, client_number[i], 0, 0);
 			number_of_clients++;
 		}
 		else
@@ -259,6 +267,12 @@ void HandleClient(LPVOID lParam)
 		cout << "shutdown failed with error #" << WSAGetLastError() << endl;
 	}
 	closesocket(client_sockets[i]);
+	HANDLE threadHandle = client_handles[i];
+	client_sockets[i] = NULL;
+	client_handles[i] = NULL;
+	number_of_clients--;
+	PrintNumberOfClients();
+	CloseHandle(threadHandle);
 }
 void PrintNumberOfClients()
 {
@@ -270,4 +284,12 @@ void PrintNumberOfClients()
 	cout << "Количество клиентов: " << number_of_clients << endl;
 
 	SetConsoleCursorPosition(hConsole, consoleInfo.dwCursorPosition);
+}
+int FindFreeSlot()
+{
+	for (int i = 0; i < MAX_CONNECTIONS; i++)
+	{
+		if (client_handles[i] == NULL && client_sockets[i] == NULL)return i;
+	}
+	return -1;
 }
